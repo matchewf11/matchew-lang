@@ -59,7 +59,7 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  MyLib
+    exposed-modules:  MyLib Parser
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -125,4 +125,5 @@ test-suite orca-test
     -- Test dependencies.
     build-depends:
         base ^>=4.20.2.0,
-        orca
+        orca,
+        HUnit
