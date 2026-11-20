@@ -22,6 +22,7 @@ instance Alternative (Parser i) where
   (Parser p1) <|> (Parser p2) = Parser $ \input ->
     p1 input <|> p2 input
 
+-- ( <expr> )
 data Expr = BoolLit Bool -- true | false
           | IntLit Int -- [0-9]+
           | StringLit String -- " [^"]* "
@@ -51,11 +52,14 @@ intLit = (IntLit . read) <$> (notNull $ spanP isDigit)
 stringLit :: Parser Char Expr
 stringLit = StringLit <$> (eqP '"' *> (spanP (/= '"')) <* eqP '"')
 
+parens :: Parser Char Expr
+parens = eqP '(' *> expr <* eqP ')'
+
 ident :: Parser Char Expr
 ident =  Ident <$> (notNull $ spanP isAlpha)
 
 expr :: Parser Char Expr
-expr = boolLit <|> intLit <|> stringLit <|> ident
+expr = parens <|> boolLit <|> intLit <|> stringLit <|> ident
 
 boolLit :: Parser Char Expr
 boolLit = trueP <|> falseP

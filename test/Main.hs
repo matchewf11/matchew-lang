@@ -29,6 +29,10 @@ testParser = "parser" ~: TestList
   , runParser ident "abc" ~=? Just (Ident "abc", "")
   , runParser ident "" ~=? Nothing
 
+  , runParser parens "(abc)" ~=? Just (Ident "abc", "")
+  , runParser parens "(abc" ~=? Nothing
+
+  , runParser expr "(abc)" ~=? Just (Ident "abc", "")
   , runParser expr "abc" ~=? Just (Ident "abc", "")
   , runParser expr "\"abc\"" ~=? Just (StringLit "abc", "")
   , runParser expr "123" ~=? Just (IntLit 123, "")
