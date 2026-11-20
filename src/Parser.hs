@@ -25,6 +25,7 @@ instance Alternative (Parser i) where
 data Expr = BoolLit Bool -- true | false
           | IntLit Int -- [0-9]+
           | StringLit String -- " [^"]* "
+          | Ident String -- [a-zA-Z]+
           deriving (Show, Eq)
 
 eqP :: Eq a => a -> Parser a a
@@ -45,13 +46,16 @@ notNull (Parser p) = Parser $ \input ->
   guard (not $ null a) *> Just (a, xs)
 
 intLit :: Parser Char Expr
-intLit = (IntLit . read) <$> (notNull (spanP isDigit))
+intLit = (IntLit . read) <$> (notNull $ spanP isDigit)
 
 stringLit :: Parser Char Expr
 stringLit = StringLit <$> (eqP '"' *> (spanP (/= '"')) <* eqP '"')
 
+ident :: Parser Char Expr
+ident =  Ident <$> (notNull $ spanP isAlpha)
+
 expr :: Parser Char Expr
-expr = boolLit <|> intLit <|> stringLit
+expr = boolLit <|> intLit <|> stringLit <|> ident
 
 boolLit :: Parser Char Expr
 boolLit = trueP <|> falseP
