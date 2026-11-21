@@ -1,52 +1,69 @@
 module Parser where
 
+-- https://serokell.io/blog/parser-combinators-in-haskell
+
 import Control.Applicative
 import Data.Char
+import Data.List
 import Control.Monad
 
+data Error input
+  = EndOfInput
+  | Unexpected input
+  | Empty
+  deriving (Show, Eq)
+
 newtype Parser input output = Parser
-  { runParser :: [input] -> Maybe (output, [input])
+  { runParser :: [input] -> Either [Error input] (output, [input])
   }
 
 instance Functor (Parser i) where
   fmap f (Parser p) = Parser (fmap (\(a, xs) -> (f a, xs)) . p)
 
 instance Applicative (Parser i) where
-  pure c = Parser (Just . (,) c)
+  pure c = Parser (Right . (,) c)
   (Parser p1) <*> (Parser p2) = Parser $ \input ->
     p1 input >>= \(f, input') ->
     (\(a, input'') -> (f a, input'')) <$> (p2 input')
 
-instance Alternative (Parser i) where
-  empty = Parser $ const Nothing
+instance Monad (Parser i) where
+  return = pure
+  Parser p >>= k = Parser $ \input ->
+    (p input) >>= \(output, rest) ->
+    runParser (k output) rest
+
+instance (Eq i) => Alternative (Parser i) where
+  empty = Parser $ const (Left [Empty])
   (Parser p1) <|> (Parser p2) = Parser $ \input ->
-    p1 input <|> p2 input
+    case p1 input of
+      Right (output, rest) -> Right (output, rest)
+      Left err ->
+        case p2 input of
+	  Right (output, rest) -> Right (output, rest)
+          Left err' -> Left $ nub $ err <> err'
 
 eqP :: Eq a => a -> Parser a a
 eqP x = Parser $ \xs ->
   case xs of
-    (y:ys) | y == x -> Just (y, ys)
-    _ -> Nothing
+    [] -> Left [EndOfInput]
+    (y:ys) | y == x -> Right (y, ys)
+    (y:_) -> Left [Unexpected y]
 
 listP :: Eq a => [a] -> Parser a [a]
 listP = sequenceA . map eqP
 
 spanP :: (a -> Bool) -> Parser a [a]
-spanP f = Parser (Just . span f)
+spanP f = Parser (Right . span f)
 
 notNull :: Parser a [b] -> Parser a [b]
 notNull (Parser p) = Parser $ \input ->
-  p input >>= \(a, xs) ->
-  guard (not $ null a) *> Just (a, xs)
+  case p input of
+    Right ([], rest) -> Left [Empty]
+    Left err -> Left err
+    x -> x
 
 ws :: Parser Char String
 ws = spanP isSpace
 
-nullable :: Parser a b -> Parser a (Maybe b)
-nullable (Parser p) = Parser $ \input ->
-  case p input of
-    Nothing -> Just (Nothing, input)
-    Just (a, xs) -> Just (Just a, xs)
-
-sepBy :: Parser a b -> Parser a s -> Parser a [b]
+sepBy :: Eq a => Parser a b -> Parser a s -> Parser a [b]
 sepBy element sep = ((:) <$> element <*> (many (sep *> element))) <|> pure []
