@@ -26,17 +26,41 @@ testParser = "parser" ~: TestList
   , runParser intLit "123" ~=? Just (IntLit 123, "")
   , runParser intLit "abc" ~=? Nothing
 
+  , runParser listLit "[]" ~=? Just (ListLit [], "")
+  , runParser listLit "[1]" ~=? Just (ListLit [IntLit 1], "")
+  , runParser listLit "[1,1]" ~=? Just (ListLit [IntLit 1, IntLit 1], "")
+  , runParser listLit "[  ]" ~=? Just (ListLit [], "")
+  , runParser listLit "[1 ]" ~=? Just (ListLit [IntLit 1], "")
+  , runParser listLit "[ 1]" ~=? Just (ListLit [IntLit 1], "")
+  , runParser listLit "[ 1 ]" ~=? Just (ListLit [IntLit 1], "")
+  , runParser listLit "[" ~=? Nothing
+  , runParser listLit "[ 1 , 2 ]" ~=? Just (ListLit [IntLit 1, IntLit 2], "")
+  , runParser listLit "[ 1 , 2 , 3 ]" ~=? Just (ListLit [IntLit 1, IntLit 2, IntLit 3], "")
+  , runParser listLit "[[1], 1]" ~=? Just (ListLit [ListLit [IntLit 1], IntLit 1], "")
+
   , runParser ident "abc" ~=? Just (Ident "abc", "")
   , runParser ident "" ~=? Nothing
+
+  , runParser ws "  foo" ~=? Just ("  ", "foo")
 
   , runParser parens "(abc)" ~=? Just (Ident "abc", "")
   , runParser parens "(abc" ~=? Nothing
 
+  , runParser tupleLit "()" ~=? Just (TupleLit [], "")
+  , runParser tupleLit "(foo)" ~=? Nothing
+  , runParser tupleLit "( 1 , )" ~=? Just (TupleLit [IntLit 1], "")
+  , runParser tupleLit "( 1 , 1 )" ~=? Just (TupleLit [IntLit 1, IntLit 1], "")
+  , runParser tupleLit "( 1 , 1 , 1)" ~=? Just (TupleLit [IntLit 1, IntLit 1, IntLit 1], "")
+
+  , runParser expr "[1, 2]" ~=? Just (ListLit [IntLit 1, IntLit 2], "")
   , runParser expr "(abc)" ~=? Just (Ident "abc", "")
   , runParser expr "abc" ~=? Just (Ident "abc", "")
+  , runParser expr "(abc)" ~=? Just (Ident "abc", "")
+  , runParser expr "(abc,)" ~=? Just (TupleLit [Ident "abc"], "")
   , runParser expr "\"abc\"" ~=? Just (StringLit "abc", "")
   , runParser expr "123" ~=? Just (IntLit 123, "")
   , runParser expr "true" ~=? Just (BoolLit True, "")
+  , runParser expr "()" ~=? Just (TupleLit [], "")
   ]
 
 main :: IO ()
