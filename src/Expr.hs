@@ -40,7 +40,10 @@ parens :: Parser Char Expr
 parens = eqP '(' *> expr <* eqP ')'
 
 ident :: Parser Char Expr
-ident =  (Ident . toList) <$> (notNull $ spanP isAlpha)
+ident =  (Ident . toList) <$> getIdent
+
+getIdent :: Parser Char (NonEmpty Char)
+getIdent = notNull $ spanP isAlpha
 
 tupleLit :: Parser Char Expr
 tupleLit = TupleLit <$> (eqP '(' *> ws *> elements <* ws <* eqP ')')

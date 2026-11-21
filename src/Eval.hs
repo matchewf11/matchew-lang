@@ -1,27 +1,52 @@
 module Eval where
 
+import Val
 import Prog
+import Env
 import Stmt
 import Expr
 import qualified Data.List.NonEmpty as NE
 
-data Value = ValInt Int
-           | ValString String
-           | ValBool Bool
-           | ValList [Value]
-           | ValTuple [Value]
-           deriving (Show, Eq)
+newtype Eval output = Eval
+  { runEval :: Env -> Either String (output, Env)
+  }
 
-eval :: Prog -> Value
-eval (Prog xs) = evalStmt $ NE.last xs
+instance Functor Eval where
+  fmap f (Eval e) = Eval (fmap (\(a, env) -> (f a, env)) . e)
 
-evalStmt :: Stmt -> Value
-evalStmt (StmtExpr e) = evalExpr e
+instance Applicative Eval where
+  pure a = Eval (Right . (,) a)
+  (Eval e1) <*> (Eval e2) = Eval $ \env ->
+    e1 env >>= \(f, env') ->
+      (\(a, env'') -> (f a, env'')) <$> (e2 env')
 
-evalExpr :: Expr -> Value
-evalExpr (BoolLit b) = ValBool b
-evalExpr (IntLit i) = ValInt i
-evalExpr (StringLit s) = ValString s
-evalExpr (TupleLit xs) = ValTuple $ evalExpr <$> xs
-evalExpr (ListLit xs) = ValList $ evalExpr <$> xs
-evalExpr (Ident _) = error "TODO: add defs and env"
+instance Monad Eval where
+  return = pure
+  (Eval e1) >>= f = Eval $ \env ->
+    e1 env >>= \(a, env') ->
+    runEval (f a) env'
+
+eval :: Prog -> Eval (Maybe Value)
+eval (Prog (x NE.:| [])) = evalStmt x
+eval (Prog (x NE.:| (y:ys))) = evalStmt x >> (eval (Prog $ y NE.:| ys))
+
+evalExpr :: Expr -> Eval Value
+evalExpr (BoolLit b) = Eval $ \env -> Right (ValBool b, env)
+evalExpr (IntLit i) = Eval $ \env -> Right (ValInt i, env)
+evalExpr (StringLit s) = Eval $ \env -> Right (ValString s, env)
+evalExpr (TupleLit xs) = ValTuple <$> (sequenceA (evalExpr <$> xs))
+evalExpr (ListLit xs) = ValList <$> (sequenceA (evalExpr <$> xs))
+evalExpr (Ident s) = lookupVar s
+
+evalStmt :: Stmt -> Eval (Maybe Value)
+evalStmt (StmtExpr e) = Just <$> evalExpr e
+evalStmt (StmtDef s e) = (\_ -> Nothing) <$> (evalExpr e >>= defineVar s)
+
+defineVar :: String -> Value -> Eval ()
+defineVar name val = Eval $ \env -> Right ((), (setEnv name val env))
+
+lookupVar :: String -> Eval Value
+lookupVar name = Eval $ \env ->
+  case getEnv name env of
+    Just v -> Right (v, env)
+    Nothing -> Left $ "Could Not Find Var: " ++  name

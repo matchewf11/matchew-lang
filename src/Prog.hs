@@ -9,4 +9,4 @@ newtype Prog = Prog (NonEmpty Stmt)
   deriving (Show, Eq)
 
 prog :: Parser Char Prog
-prog = Prog <$> (notNull $ many stmtExpr)
+prog = Prog <$> (notNull $ many stmt)
