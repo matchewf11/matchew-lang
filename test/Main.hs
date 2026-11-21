@@ -2,6 +2,7 @@ module Main (main) where
 
 import Test.HUnit
 import Parser
+import Expr
 import Data.Char
 
 testParser :: Test

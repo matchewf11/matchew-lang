@@ -22,15 +22,6 @@ instance Alternative (Parser i) where
   (Parser p1) <|> (Parser p2) = Parser $ \input ->
     p1 input <|> p2 input
 
-data Expr = BoolLit Bool -- true | false
-          | IntLit Int -- [0-9]+
-          | StringLit String -- " [^"]* "
-          | Ident String -- [a-zA-Z]+
-          | ListLit [Expr] -- [ (epsilon | <expr> (, <expr>)*) ]
-          | TupleLit [Expr] -- () | ( <expr>, ) | ( expr (,<expr>)+ )
-          -- ( <expr> )
-          deriving (Show, Eq)
-
 eqP :: Eq a => a -> Parser a a
 eqP x = Parser $ \xs ->
   case xs of
@@ -59,38 +50,3 @@ nullable (Parser p) = Parser $ \input ->
 
 sepBy :: Parser a b -> Parser a s -> Parser a [b]
 sepBy element sep = ((:) <$> element <*> (many (sep *> element))) <|> pure []
-
-listLit :: Parser Char Expr
-listLit = ListLit <$> (eqP '[' *> ws *> elements <* ws <* eqP ']')
-  where
-    elements :: Parser Char [Expr]
-    elements = sepBy expr (ws *> eqP ',' <* ws)
-
-intLit :: Parser Char Expr
-intLit = (IntLit . read) <$> (notNull $ spanP isDigit)
-
-stringLit :: Parser Char Expr
-stringLit = StringLit <$> (eqP '"' *> (spanP (/= '"')) <* eqP '"')
-
-parens :: Parser Char Expr
-parens = eqP '(' *> expr <* eqP ')'
-
-ident :: Parser Char Expr
-ident =  Ident <$> (notNull $ spanP isAlpha)
-
-tupleLit :: Parser Char Expr
-tupleLit = TupleLit <$> (eqP '(' *> ws *> elements <* ws <* eqP ')')
-  where
-    tuple :: Parser Char [Expr]
-    tuple = ((:) <$> expr <* ws <* eqP ',' <* ws) <*> (sepBy expr (ws *> (eqP ',') <* ws))
-    elements :: Parser Char [Expr]
-    elements = tuple <|> pure []
-
-expr :: Parser Char Expr
-expr = parens <|> boolLit <|> intLit <|> stringLit <|> ident <|> listLit <|> tupleLit
-
-boolLit :: Parser Char Expr
-boolLit = trueP <|> falseP
-  where
-    trueP = (const $ BoolLit True) <$> (listP "true")
-    falseP = (const $ BoolLit False) <$> (listP "false")
