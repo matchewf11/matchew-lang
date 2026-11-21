@@ -23,7 +23,7 @@ name:               orca
 version:            0.0.0.0
 
 -- A short (one-line) description of the package.
-synopsis:           Small, Practical Function Language
+synopsis:           Small, Practical Functional Language
 
 -- A longer description of the package.
 -- description:
@@ -59,7 +59,7 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Parser, Expr, Stmt, Prog, Eval, Env, Val, Repl
+    exposed-modules:  Parser, Expr, Stmt, Prog, Eval, Env, Val, Repl, Display
 
     -- Modules included in this library but not exported.
     -- other-modules:
