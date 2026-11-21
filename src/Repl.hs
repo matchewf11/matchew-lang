@@ -4,10 +4,12 @@ import System.IO (isEOF, hFlush, stdout)
 
 import Env
 import Val
+import Display
 import Eval
 import Prog
 import Parser
 
+-- TODO: only return value if the '_' is empty
 evalInput :: String -> Either [Error Char] (Eval (Maybe Value))
 evalInput = fmap (\(program, _) -> eval program) . runParser prog
 
@@ -27,7 +29,7 @@ handleInput env input =
     Right v ->
       case runEval v env of
         Left e -> print e >> replLoop env
-        Right (Just mv, env') -> print mv >> replLoop env'
+        Right (Just mv, env') -> putStrLn (display mv) >> replLoop env'
         Right (Nothing, env') -> replLoop env'
 
 repl :: IO ()

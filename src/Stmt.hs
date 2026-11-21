@@ -5,7 +5,7 @@ import Parser
 import Data.List.NonEmpty
 import Control.Applicative
 
-data Stmt = StmtExpr Expr -- <expr>;
+data Stmt = StmtExpr Expr -- <ws><expr><ws>;
           | StmtDef String Expr -- <ws><ident><ws>=<stmtExpr>
   deriving (Show, Eq)
 
