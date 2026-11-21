@@ -5,7 +5,6 @@ module Parser where
 import Control.Applicative
 import Data.Char
 import Data.List
-import Control.Monad
 
 data Error input
   = EndOfInput
@@ -39,7 +38,7 @@ instance (Eq i) => Alternative (Parser i) where
       Right (output, rest) -> Right (output, rest)
       Left err ->
         case p2 input of
-	  Right (output, rest) -> Right (output, rest)
+          Right (output, rest) -> Right (output, rest)
           Left err' -> Left $ nub $ err <> err'
 
 eqP :: Eq a => a -> Parser a a
@@ -58,7 +57,7 @@ spanP f = Parser (Right . span f)
 notNull :: Parser a [b] -> Parser a [b]
 notNull (Parser p) = Parser $ \input ->
   case p input of
-    Right ([], rest) -> Left [Empty]
+    Right ([], _) -> Left [Empty]
     Left err -> Left err
     x -> x
 
