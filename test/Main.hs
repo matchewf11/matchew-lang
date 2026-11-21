@@ -3,10 +3,20 @@ module Main (main) where
 import Test.HUnit
 import Parser
 import Expr
+import Stmt
 import Data.Char
 
-testParser :: Test
-testParser = "parser" ~: TestList
+testStmt :: Test
+testStmt = "stmt" ~: TestList
+  [ runParser stmtExpr "()" ~=? Nothing
+  , runParser stmtExpr "" ~=? Nothing
+  , runParser stmtExpr "  1   ;" ~=? Just (StmtExpr (IntLit 1), "")
+
+  , runParser stmt "  1   ;" ~=? Just (StmtExpr (IntLit 1), "")
+  ]
+
+testExpr :: Test
+testExpr = "expr" ~: TestList
   [ runParser (eqP 'c') "char" ~=? Just ('c', "har")
   , runParser (eqP 'c') "har" ~=? Nothing
 
@@ -62,7 +72,9 @@ testParser = "parser" ~: TestList
   , runParser expr "123" ~=? Just (IntLit 123, "")
   , runParser expr "true" ~=? Just (BoolLit True, "")
   , runParser expr "()" ~=? Just (TupleLit [], "")
+
+
   ]
 
 main :: IO ()
-main = runTestTT testParser >>= print
+main = runTestTT (TestList [testExpr, testStmt]) >>= print
