@@ -5,6 +5,7 @@ module Parser where
 import Control.Applicative
 import Data.Char
 import Data.List
+import Data.List.NonEmpty (NonEmpty(..))
 
 data Error input
   = EndOfInput
@@ -54,12 +55,12 @@ listP = sequenceA . map eqP
 spanP :: (a -> Bool) -> Parser a [a]
 spanP f = Parser (Right . span f)
 
-notNull :: Parser a [b] -> Parser a [b]
+notNull :: Parser a [b] -> Parser a (NonEmpty b)
 notNull (Parser p) = Parser $ \input ->
   case p input of
     Right ([], _) -> Left [Empty]
     Left err -> Left err
-    x -> x
+    Right (x:xs, rhs) -> Right (x :| xs, rhs)
 
 ws :: Parser Char String
 ws = spanP isSpace

@@ -3,6 +3,7 @@ module Expr where
 import Control.Applicative
 import Data.Char
 import Parser
+import Data.List.NonEmpty
 
 data Expr = BoolLit Bool -- true | false
           | IntLit Int -- [0-9]+
@@ -30,7 +31,7 @@ listLit = ListLit <$> (eqP '[' *> ws *> elements <* ws <* eqP ']')
     elements = sepBy expr (ws *> eqP ',' <* ws)
 
 intLit :: Parser Char Expr
-intLit = (IntLit . read) <$> (notNull $ spanP isDigit)
+intLit = (IntLit . read . toList) <$> (notNull $ spanP isDigit)
 
 stringLit :: Parser Char Expr
 stringLit = StringLit <$> (eqP '"' *> (spanP (/= '"')) <* eqP '"')
@@ -39,7 +40,7 @@ parens :: Parser Char Expr
 parens = eqP '(' *> expr <* eqP ')'
 
 ident :: Parser Char Expr
-ident =  Ident <$> (notNull $ spanP isAlpha)
+ident =  (Ident . toList) <$> (notNull $ spanP isAlpha)
 
 tupleLit :: Parser Char Expr
 tupleLit = TupleLit <$> (eqP '(' *> ws *> elements <* ws <* eqP ')')
