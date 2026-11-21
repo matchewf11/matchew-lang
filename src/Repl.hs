@@ -7,7 +7,6 @@ import Val
 import Eval
 import Prog
 import Parser
-import qualified Error as E
 
 evalInput :: String -> Either [Error Char] (Eval (Maybe Value))
 evalInput = fmap (\(program, _) -> eval program) . runParser prog

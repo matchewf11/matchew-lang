@@ -5,7 +5,6 @@ import Prog
 import Env
 import Stmt
 import Expr
-import qualified Data.List.NonEmpty as NE
 
 newtype Eval output = Eval
   { runEval :: Env -> Either String (output, Env)
@@ -27,8 +26,9 @@ instance Monad Eval where
     runEval (f a) env'
 
 eval :: Prog -> Eval (Maybe Value)
-eval (Prog (x NE.:| [])) = evalStmt x
-eval (Prog (x NE.:| (y:ys))) = evalStmt x >> (eval (Prog $ y NE.:| ys))
+eval (Prog []) = Eval $ \env -> Right (Nothing, env)
+eval (Prog [x]) = evalStmt x
+eval (Prog (x:y:xs)) = evalStmt x >> (eval (Prog $ (y:xs)))
 
 evalExpr :: Expr -> Eval Value
 evalExpr (BoolLit b) = Eval $ \env -> Right (ValBool b, env)
