@@ -1,4 +1,4 @@
-module Env (getEnv, setEnv, Env) where
+module Env (emptyEnv, getEnv, setEnv, Env) where
 
 import Val
 import Control.Applicative
