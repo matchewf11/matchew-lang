@@ -30,8 +30,10 @@ eval (Prog []) = Eval $ \env -> Right (Nothing, env)
 eval (Prog [x]) = evalStmt x
 eval (Prog (x:y:xs)) = evalStmt x >> (eval (Prog $ (y:xs)))
 
-evalFn :: Value -> Value -> Either String (Value, Env Value)
-evalFn (ValFn param ex env) inputVal = runEval (evalExpr ex) (setEnv param inputVal env)
+evalFn :: Value -> Value -> Either String Value
+evalFn (ValFn param ex env) inputVal = (\(v, _) -> v) <$>
+  (runEval (evalExpr ex) (setEnv param inputVal env))
+evalFn (ValBuiltin f) inputVal = Right $ f inputVal
 evalFn _ _ = Left "LHS of Apply must be a Function"
 
 evalExpr :: Expr -> Eval Value
@@ -45,7 +47,7 @@ evalExpr (Lambda param e) = Eval $ \env -> Right (ValFn param e env, env)
 evalExpr (Apply fnExpr inputExpr) = Eval $ \env ->
   runEval (evalExpr fnExpr) env >>= \(fnVal, env') ->
   runEval (evalExpr inputExpr) env' >>= \(inputVal, env'') ->
-  evalFn fnVal inputVal >>= \(outputVal, _) ->
+  evalFn fnVal inputVal >>= \outputVal ->
   Right (outputVal, env'')
 
 evalStmt :: Stmt -> Eval (Maybe Value)

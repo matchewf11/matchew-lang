@@ -11,7 +11,7 @@ data Value = ValInt Int
            | ValList [Value]
            | ValTuple [Value]
            | ValFn String Expr (Env Value)
-           deriving (Show, Eq)
+           | ValBuiltin (Value -> Value)
 
 instance Display Value where
   display (ValInt i) = show i
@@ -22,3 +22,4 @@ instance Display Value where
   display (ValTuple [x]) = '(' : (display x) ++ ",)"
   display (ValTuple xs) = '(' : (intercalate ", " (display <$> xs)) ++ ")"
   display (ValFn param _ _) = "<fn " ++ param ++ ">"
+  display (ValBuiltin _) = "<builtin>"

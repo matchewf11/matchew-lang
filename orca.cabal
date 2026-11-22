@@ -59,7 +59,17 @@ library
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  Parser, Expr, Stmt, Prog, Eval, Env, Val, Repl, Display
+    exposed-modules:
+        Parser,
+        Expr,
+        Stmt,
+        Prog,
+        Eval,
+        Env,
+        Val,
+        Repl,
+        Display,
+        Builtin
 
     -- Modules included in this library but not exported.
     -- other-modules:

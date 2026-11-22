@@ -2,6 +2,7 @@ module Repl where
 
 import System.IO (isEOF, hFlush, stdout)
 
+import Builtin
 import Env
 import Val
 import Display
@@ -33,4 +34,4 @@ handleInput env input =
         Right (Nothing, env') -> replLoop env'
 
 repl :: IO ()
-repl = replLoop emptyEnv
+repl = replLoop envBuiltin
