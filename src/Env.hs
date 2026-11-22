@@ -1,5 +1,8 @@
 module Env (newScope, emptyEnv, getEnv, setEnv, Env) where
 
+-- TODO: huge note, i am not convinced we even need "parent env"
+-- because hashmaps are immutable in haskell
+
 import Control.Applicative
 import qualified Data.Map as Map
 
