@@ -69,7 +69,9 @@ library
         Val,
         Repl,
         Display,
-        Builtin
+        Builtin,
+        File,
+        Error
 
     -- Modules included in this library but not exported.
     -- other-modules:
