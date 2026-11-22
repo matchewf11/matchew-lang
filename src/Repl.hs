@@ -19,16 +19,16 @@ handleEOF a = isEOF >>= \b -> if b then putStrLn "" else a
 putPrefix :: IO ()
 putPrefix = putStr "> " >> hFlush stdout
 
-replLoop :: Env -> IO ()
+replLoop :: Env Value -> IO ()
 replLoop env = putPrefix >> (handleEOF (getLine >>= handleInput env))
 
-handleInput :: Env -> String -> IO ()
+handleInput :: Env Value -> String -> IO ()
 handleInput env input =
   case evalInput input of
     Left e -> print e >> replLoop env
     Right v ->
       case runEval v env of
-        Left e -> print e >> replLoop env
+        Left e -> putStrLn e >> replLoop env
         Right (Just mv, env') -> putStrLn (display mv) >> replLoop env'
         Right (Nothing, env') -> replLoop env'
 

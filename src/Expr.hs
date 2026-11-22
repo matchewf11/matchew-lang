@@ -11,6 +11,7 @@ data Expr = BoolLit Bool -- true | false
           | Ident String -- [a-zA-Z]+
           | ListLit [Expr] -- [ (epsilon | <expr> (, <expr>)*) ]
           | TupleLit [Expr] -- () | ( <expr>, ) | ( expr (,<expr>)+ )
+          | Lambda String Expr -- | <ident>* | <expr>
           -- ( <expr> )
           deriving (Show, Eq)
 
@@ -23,6 +24,10 @@ expr = parens
   <|> tupleLit
   -- must be after all keywords / bools to avoid conflicts
   <|> ident
+  <|> lambda
+
+lambda :: Parser Char Expr
+lambda = ((Lambda . toList) <$> (eqP '|' *> ws *> getIdent <* ws <* eqP '|' <* ws)) <*> expr
 
 listLit :: Parser Char Expr
 listLit = ListLit <$> (eqP '[' *> ws *> elements <* ws <* eqP ']')

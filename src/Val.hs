@@ -1,5 +1,7 @@
 module Val where
 
+import Env
+import Expr
 import Display
 import Data.List
 
@@ -8,6 +10,7 @@ data Value = ValInt Int
            | ValBool Bool
            | ValList [Value]
            | ValTuple [Value]
+           | ValFn String Expr (Env Value)
            deriving (Show, Eq)
 
 instance Display Value where
@@ -18,3 +21,4 @@ instance Display Value where
   display (ValList vals) = '[' : (intercalate ", " (display <$> vals)) ++ "]"
   display (ValTuple [x]) = '(' : (display x) ++ ",)"
   display (ValTuple xs) = '(' : (intercalate ", " (display <$> xs)) ++ ")"
+  display (ValFn param _ _) = "<fn " ++ param ++ ">"

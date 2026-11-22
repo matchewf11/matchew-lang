@@ -7,7 +7,7 @@ import Stmt
 import Expr
 
 newtype Eval output = Eval
-  { runEval :: Env -> Either String (output, Env)
+  { runEval :: Env Value -> Either String (output, Env Value)
   }
 
 instance Functor Eval where
@@ -37,6 +37,7 @@ evalExpr (StringLit s) = Eval $ \env -> Right (ValString s, env)
 evalExpr (TupleLit xs) = ValTuple <$> (sequenceA (evalExpr <$> xs))
 evalExpr (ListLit xs) = ValList <$> (sequenceA (evalExpr <$> xs))
 evalExpr (Ident s) = lookupVar s
+evalExpr (Lambda param e) = Eval $ \env -> Right (ValFn param e env, env)
 
 evalStmt :: Stmt -> Eval (Maybe Value)
 evalStmt (StmtExpr e) = Just <$> evalExpr e
