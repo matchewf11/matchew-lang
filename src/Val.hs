@@ -1,6 +1,7 @@
 module Val where
 
 import Display
+import Data.List
 
 data Value = ValInt Int
            | ValString String
@@ -14,7 +15,6 @@ instance Display Value where
   display (ValString s) = show s
   display (ValBool True) = "true"
   display (ValBool False) = "false"
-
-  -- TODO: this is borked
-  display (ValList vals) = (reverse $ foldr (\x acc -> acc ++ display x) "[" vals) ++ "]"
-  display (ValTuple vals) = (reverse $ foldr (\x acc -> acc ++ display x) "(" vals) ++ ")"
+  display (ValList vals) = '[' : (intercalate ", " (display <$> vals)) ++ "]"
+  display (ValTuple [x]) = '(' : (display x) ++ ",)"
+  display (ValTuple xs) = '(' : (intercalate ", " (display <$> xs)) ++ ")"
