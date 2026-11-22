@@ -12,11 +12,15 @@ data Expr = BoolLit Bool -- true | false
           | ListLit [Expr] -- [ (epsilon | <expr> (, <expr>)*) ]
           | TupleLit [Expr] -- () | ( <expr>, ) | ( expr (,<expr>)+ )
           | Lambda String Expr -- | <ident>* | <expr>
+          | Apply Expr Expr -- <expr> <expr>
           -- ( <expr> )
           deriving (Show, Eq)
 
 expr :: Parser Char Expr
-expr = parens
+expr = foldl1 Apply <$> sepBy atom ws
+
+atom :: Parser Char Expr
+atom = parens
   <|> boolLit
   <|> intLit
   <|> stringLit
