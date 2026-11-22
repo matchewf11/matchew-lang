@@ -1,24 +1,15 @@
-module Env (newScope, emptyEnv, getEnv, setEnv, Env) where
+module Env (emptyEnv, getEnv, setEnv, Env) where
 
--- TODO: huge note, i am not convinced we even need "parent env"
--- because hashmaps are immutable in haskell
-
-import Control.Applicative
 import qualified Data.Map as Map
 
-data Env v = Env
-  { getBindings :: Map.Map String v
-  , getParent   :: Maybe (Env v)
-  } deriving (Show, Eq)
+newtype Env v = Env (Map.Map String v)
+  deriving (Show, Eq)
 
 emptyEnv :: Env v
-emptyEnv = Env Map.empty Nothing
+emptyEnv = Env Map.empty
 
 getEnv :: String -> Env v -> Maybe v
-getEnv name env = Map.lookup name (getBindings env) <|> (getParent env >>= getEnv name)
+getEnv name (Env env) = Map.lookup name env
 
 setEnv :: String -> v -> Env v -> Env v
-setEnv s v (Env b p) = Env (Map.insert s v b) p
-
-newScope :: Env v -> Env v
-newScope = Env Map.empty . Just
+setEnv s v (Env b) = Env (Map.insert s v b)
