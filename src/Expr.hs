@@ -5,6 +5,13 @@ import Data.Char
 import Parser
 import Data.List.NonEmpty
 
+-- NOTE IMPORTANT:
+-- there is a bug right now with how bools and idents
+-- are evaluated. I propose that we make an ident type
+-- data Ident = True | False | Custom String
+-- parse the ident as a whole, then afterward parse it
+-- into, sorting out the keywords
+
 data Expr = BoolLit Bool -- true | false
           | IntLit Int -- [0-9]+
           | StringLit String -- " [^"]* "
