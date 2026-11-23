@@ -11,6 +11,9 @@ import Data.List.NonEmpty
 -- data Ident = True | False | Custom String
 -- parse the ident as a whole, then afterward parse it
 -- into, sorting out the keywords
+--
+-- or perhaps that is a stupid idea, nonethelless we
+-- need to parse the whole thing then sort out keywords
 
 data Expr = BoolLit Bool -- true | false
           | IntLit Int -- [0-9]+
